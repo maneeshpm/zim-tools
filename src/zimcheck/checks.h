@@ -69,13 +69,32 @@ class ErrorLogger {
   private:
     std::unordered_map<TestType, std::vector<std::string>> reportMsgs;
     std::unordered_map<TestType, bool> testStatus;
+    const bool jsonOutputMode;
 
   public:
-    ErrorLogger()
+    explicit ErrorLogger(bool _jsonOutputMode = false)
+      : jsonOutputMode(_jsonOutputMode)
     {
         for (const auto &m : errormapping) {
             testStatus[m.first] = true;
         }
+        if ( jsonOutputMode ) {
+          std::cout << "{" << std::endl;
+          std::cout << "\t'zimcheck_version' : '" << VERSION << "'" << std::endl;
+        }
+    }
+
+    ~ErrorLogger()
+    {
+        if ( jsonOutputMode ) {
+          std::cout << "}" << std::endl;
+        }
+    }
+
+    void infoMsg(const std::string& msg) const {
+      if ( !jsonOutputMode ) {
+        std::cout << msg << std::endl;
+      }
     }
 
     void setTestResult(TestType type, bool status) {

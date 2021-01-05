@@ -132,6 +132,23 @@ TEST(zimcheck, nooptions_goodzimfile)
     );
 }
 
+TEST(zimcheck, json_goodzimfile)
+{
+    CapturedStdout zimcheck_output;
+    ASSERT_EQ(0, zimcheck({
+      "zimcheck",
+      "--json",
+      "data/zimfiles/good.zim"
+    }));
+
+    ASSERT_EQ(
+      "{" "\n"
+      "\t'zimcheck_version' : '2.1.1'" "\n"
+      "}" "\n"
+      , std::string(zimcheck_output)
+    );
+}
+
 TEST(zimcheck, bad_checksum)
 {
     CapturedStdout zimcheck_output;
