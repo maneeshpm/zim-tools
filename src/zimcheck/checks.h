@@ -51,6 +51,17 @@ namespace std {
   };
 }
 
+class EnabledTests {
+    std::bitset<size_t(TestType::COUNT)> tests;
+
+  public:
+    EnabledTests() {}
+
+    void enableAll() { tests.set(); }
+    void enable(TestType tt) { tests.set(size_t(tt)); }
+    bool isEnabled(TestType tt) const { return tests[size_t(tt)]; }
+};
+
 class ErrorLogger {
   private:
     std::unordered_map<TestType, std::vector<std::string>> reportMsgs;
@@ -105,6 +116,6 @@ void test_metadata(const zim::Archive& archive, ErrorLogger& reporter);
 void test_favicon(const zim::Archive& archive, ErrorLogger& reporter);
 void test_mainpage(const zim::Archive& archive, ErrorLogger& reporter);
 void test_articles(const zim::Archive& archive, ErrorLogger& reporter, ProgressBar progress,
-                   bool redundant_data, bool url_check, bool url_check_external, bool empty_check);
+                   const EnabledTests enabled_tests);
 
 #endif
