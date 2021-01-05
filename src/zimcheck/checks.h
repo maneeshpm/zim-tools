@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <bitset>
 #include <iostream>
 #include <algorithm>
 
@@ -38,7 +39,9 @@ enum class TestType {
     URL_INTERNAL,
     URL_EXTERNAL,
     MIME,
-    OTHER
+    OTHER,
+
+    COUNT
 };
 
 // Specialization of std::hash needed for our unordered_map. Can be removed in c++14
@@ -51,7 +54,10 @@ namespace std {
 class ErrorLogger {
   private:
     std::unordered_map<TestType, std::vector<std::string>> reportMsgs;
-    std::unordered_map<TestType, bool> testStatus;
+
+    // testStatus[i] corresponds to the status of i'th test
+    std::bitset<size_t(TestType::COUNT)> testStatus;
+
     const bool jsonOutputMode;
     const char* sep = "\n";
     std::string m_indentation = "  ";

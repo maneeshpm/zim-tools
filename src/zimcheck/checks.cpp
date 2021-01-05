@@ -36,9 +36,7 @@ std::unordered_map<TestType, std::pair<LogTag, std::string>> errormapping = {
 ErrorLogger::ErrorLogger(bool _jsonOutputMode)
   : jsonOutputMode(_jsonOutputMode)
 {
-    for (const auto &m : errormapping) {
-        testStatus[m.first] = true;
-    }
+    testStatus.set();
     if ( jsonOutputMode ) {
       std::cout << "{" << std::flush;
     }
@@ -58,7 +56,7 @@ void ErrorLogger::infoMsg(const std::string& msg) const {
 }
 
 void ErrorLogger::setTestResult(TestType type, bool status) {
-    testStatus[type] = status;
+    testStatus[size_t(type)] = status;
 }
 
 void ErrorLogger::addReportMsg(TestType type, const std::string& message) {
@@ -78,14 +76,14 @@ void ErrorLogger::report(bool error_details) const {
 }
 
 bool ErrorLogger::overallStatus() const {
-    return std::all_of(testStatus.begin(), testStatus.end(),
-                       [](std::pair<TestType, bool> e){
-                                if (errormapping[e.first].first == LogTag::ERROR)
-                                {
-                                    return e.second; //return the test status result
-                                }
-                                return true;
-                        });
+    for ( size_t i = 0; i < size_t(TestType::COUNT); ++i ) {
+        if (errormapping[TestType(i)].first == LogTag::ERROR) {
+            if ( testStatus[i] == false ) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 
