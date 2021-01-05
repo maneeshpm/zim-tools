@@ -131,6 +131,7 @@ class ErrorLogger {
     }
 
     void report(bool error_details) const {
+      if ( !jsonOutputMode ) {
         for (auto testmsg : reportMsgs) {
                 auto &p = errormapping[testmsg.first];
                 std::cout << "[" + tagToStr[p.first] + "] " << p.second << ":" << std::endl;
@@ -138,6 +139,7 @@ class ErrorLogger {
                     std::cout << "  " << msg << std::endl;
                 }
         }
+      }
     }
 
     inline bool overallStatus() const {
