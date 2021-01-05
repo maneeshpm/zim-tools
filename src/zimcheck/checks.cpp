@@ -9,6 +9,86 @@
 #include <zim/archive.h>
 #include <zim/item.h>
 
+namespace
+{
+
+std::unordered_map<LogTag, std::string> tagToStr = {
+    {LogTag::ERROR,     "ERROR"},
+    {LogTag::WARNING,   "WARNING"}
+};
+
+std::unordered_map<TestType, std::pair<LogTag, std::string>> errormapping = {
+    { TestType::CHECKSUM,      {LogTag::ERROR, "Invalid checksum"}},
+    { TestType::INTEGRITY,     {LogTag::ERROR, "Invalid low-level structure"}},
+    { TestType::EMPTY,         {LogTag::ERROR, "Empty articles"}},
+    { TestType::METADATA,      {LogTag::ERROR, "Missing metadata entries"}},
+    { TestType::FAVICON,       {LogTag::ERROR, "Missing favicon"}},
+    { TestType::MAIN_PAGE,     {LogTag::ERROR, "Missing mainpage"}},
+    { TestType::REDUNDANT,     {LogTag::WARNING, "Redundant data found"}},
+    { TestType::URL_INTERNAL,  {LogTag::ERROR, "Invalid internal links found"}},
+    { TestType::URL_EXTERNAL,  {LogTag::ERROR, "Invalid external links found"}},
+    { TestType::MIME,       {LogTag::ERROR, "Incoherent mimeType found"}},
+    { TestType::OTHER,      {LogTag::ERROR, "Other errors found"}}
+};
+
+} // unnamed namespace
+
+ErrorLogger::ErrorLogger(bool _jsonOutputMode)
+  : jsonOutputMode(_jsonOutputMode)
+{
+    for (const auto &m : errormapping) {
+        testStatus[m.first] = true;
+    }
+    if ( jsonOutputMode ) {
+      std::cout << "{" << std::flush;
+    }
+}
+
+ErrorLogger::~ErrorLogger()
+{
+    if ( jsonOutputMode ) {
+      std::cout << "\n}" << std::endl;
+    }
+}
+
+void ErrorLogger::infoMsg(const std::string& msg) const {
+  if ( !jsonOutputMode ) {
+    std::cout << msg << std::endl;
+  }
+}
+
+void ErrorLogger::setTestResult(TestType type, bool status) {
+    testStatus[type] = status;
+}
+
+void ErrorLogger::addReportMsg(TestType type, const std::string& message) {
+    reportMsgs[type].push_back(message);
+}
+
+void ErrorLogger::report(bool error_details) const {
+    if ( !jsonOutputMode ) {
+        for (const auto& testmsg : reportMsgs) {
+            auto &p = errormapping[testmsg.first];
+            std::cout << "[" + tagToStr[p.first] + "] " << p.second << ":" << std::endl;
+            for (auto& msg: testmsg.second) {
+                std::cout << "  " << msg << std::endl;
+            }
+        }
+    }
+}
+
+bool ErrorLogger::overallStatus() const {
+    return std::all_of(testStatus.begin(), testStatus.end(),
+                       [](std::pair<TestType, bool> e){
+                                if (errormapping[e.first].first == LogTag::ERROR)
+                                {
+                                    return e.second; //return the test status result
+                                }
+                                return true;
+                        });
+}
+
+
 void test_checksum(zim::Archive& archive, ErrorLogger& reporter) {
     reporter.infoMsg("[INFO] Verifying Internal Checksum...");
     bool result = archive.check();
