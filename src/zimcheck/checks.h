@@ -75,6 +75,18 @@ class ErrorLogger {
 
     const std::string& indentation() const { return m_indentation; }
 
+    static std::string formatForJSON(const std::string& s) {
+      return "'" + s + "'";
+    }
+
+    static std::string formatForJSON(const char* s) {
+      return formatForJSON(std::string(s));
+    }
+
+    static const char* formatForJSON(bool b) {
+      return b ? "true" : "false";
+    }
+
   public:
     explicit ErrorLogger(bool _jsonOutputMode = false)
       : jsonOutputMode(_jsonOutputMode)
@@ -100,10 +112,11 @@ class ErrorLogger {
       }
     }
 
-    void addInfo(const std::string& key, const std::string& value) {
+    template<class T>
+    void addInfo(const std::string& key, const T& value) {
       if ( jsonOutputMode ) {
         std::cout << sep << indentation()
-                  << "'" << key << "' : '" << value << "'"
+                  << "'" << key << "' : " << formatForJSON(value)
                   << std::flush;
         sep = ",\n";
       }
