@@ -70,6 +70,10 @@ class ErrorLogger {
     std::unordered_map<TestType, std::vector<std::string>> reportMsgs;
     std::unordered_map<TestType, bool> testStatus;
     const bool jsonOutputMode;
+    const char* sep = "\n";
+    std::string m_indentation = "  ";
+
+    const std::string& indentation() const { return m_indentation; }
 
   public:
     explicit ErrorLogger(bool _jsonOutputMode = false)
@@ -79,21 +83,29 @@ class ErrorLogger {
             testStatus[m.first] = true;
         }
         if ( jsonOutputMode ) {
-          std::cout << "{" << std::endl;
-          std::cout << "\t'zimcheck_version' : '" << VERSION << "'" << std::endl;
+          std::cout << "{" << std::flush;
         }
     }
 
     ~ErrorLogger()
     {
         if ( jsonOutputMode ) {
-          std::cout << "}" << std::endl;
+          std::cout << "\n}" << std::endl;
         }
     }
 
     void infoMsg(const std::string& msg) const {
       if ( !jsonOutputMode ) {
         std::cout << msg << std::endl;
+      }
+    }
+
+    void addInfo(const std::string& key, const std::string& value) {
+      if ( jsonOutputMode ) {
+        std::cout << sep << indentation()
+                  << "'" << key << "' : '" << value << "'"
+                  << std::flush;
+        sep = ",\n";
       }
     }
 
